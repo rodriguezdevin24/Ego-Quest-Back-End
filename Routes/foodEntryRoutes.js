@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const foodEntryController = require('../controllers/foodEntryController');
+const foodEntryController = require('../Controllers/foodEntryController');
 
 router.get('/', foodEntryController.getAllEntries);
 router.post('/', foodEntryController.createEntry);

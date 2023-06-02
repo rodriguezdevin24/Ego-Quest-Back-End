@@ -6,6 +6,17 @@ const foodEntrySchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  foodName: {
+    type: String,
+    required: true
+  },
+  foodItemId: {
+    type: String,
+    required: true
+  },
+  servingsize: {
+    type: String,
+  },
   calories: {
     type: Number,
     required: true

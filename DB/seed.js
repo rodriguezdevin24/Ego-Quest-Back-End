@@ -14,8 +14,7 @@ mongoose.connect(process.env.MONGODB_URI,{
 
 // Add your own user data
 const users = [
-  { name: "John Doe", email: "john@example.com", password: "john123" },
-  // add more users
+  { name: "John Doe", email: "john@example.com", password: "john123" }
 ];
 
 // Function to seed users to DB

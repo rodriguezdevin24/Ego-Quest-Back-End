@@ -1,25 +1,39 @@
-const axios = require('axios');
-const FoodEntry = require('../Models/foodEntryModel');
-require('dotenv').config();
+const axios = require("axios");
+const FoodEntry = require("../Models/foodEntryModel");
+require("dotenv").config();
 
-// Edamam API
-const API_ID = process.env.API_ID;
-const API_KEY = process.env.API_KEY;
+// USDA API
+const API_KEY = process.env.USDA_API_KEY;
+
 
 // Create a new entry
 exports.createEntry = async (req, res) => {
   try {
-    const foodName = req.body.foodName;
-    const response = await axios.get(`https://api.edamam.com/api/food-database/v2/parser?ingr=${foodName}&app_id=${API_ID}&app_key=${API_KEY}`);
-    const nutrients = response.data.hints[0].food.nutrients;
+    const { foodName, foodItemId, user } = req.body;
+    const response = await axios.get(
+      `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${foodName}`
+    );
+    // console.log(response.data.foods[0]);
+    const nutrients = response.data.foods[0].foodNutrients;
+    let servingSize = null;
+    if (response.data.foods[0].foodPortion) {
+      servingSize = response.data.foods[0].foodPortion.gramWeight;
+    }
+
+    let energyNutrient = nutrients.find((n) => n.nutrientName === "Energy");
+    let carbsNutrient = nutrients.find((n) => n.nutrientName === "Carbohydrate, by difference");
+    let proteinNutrient = nutrients.find((n) => n.nutrientName === "Protein");
+    let fatsNutrient = nutrients.find((n) => n.nutrientName === "Total lipid (fat)");
 
     const newEntry = new FoodEntry({
-      user: req.body.user,
+      user: user,
       foodName: foodName,
-      calories: nutrients.ENERC_KCAL,
-      carbs: nutrients.CHOCDF,
-      protein: nutrients.PROCNT,
-      fats: nutrients.FAT
+      foodItemId: foodItemId,
+      servingSize: servingSize,
+      calories: energyNutrient ? energyNutrient.nutrientNumber : null,
+      carbs: carbsNutrient ? carbsNutrient.nutrientNumber : null,
+      protein: proteinNutrient ? proteinNutrient.nutrientNumber : null,
+      fats: fatsNutrient ? fatsNutrient.nutrientNumber : null,
     });
 
     const savedEntry = await newEntry.save();
@@ -28,6 +42,8 @@ exports.createEntry = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+ 
 
 // Get all entries
 exports.getAllEntries = async (req, res) => {
@@ -46,6 +62,7 @@ exports.getEntry = async (req, res) => {
     if (entry == null) {
       return res.status(404).json({ message: "Entry not found" });
     }
+    const transformedEntry = transformServingSize(entry.toObject());
     res.status(200).json(entry);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -55,26 +72,40 @@ exports.getEntry = async (req, res) => {
 // Update an entry
 exports.updateEntry = async (req, res) => {
   try {
-    const foodName = req.body.foodName;
-    const response = await axios.get(`https://api.edamam.com/api/food-database/v2/parser?ingr=${foodName}&app_id=${API_ID}&app_key=${API_KEY}`);
-    const nutrients = response.data.hints[0].food.nutrients;
+    const { foodName, foodItemId, user } = req.body;
+    const response = await axios.get(
+      `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${foodName}`
+    );
+    const nutrients = response.data.foods[0].foodNutrients;
+    const servingSize = response.data.foods[0].foodPortion.gramWeight;
 
+    // Confirm the entry exists
+    let entryToUpdate = await FoodEntry.findById(req.params.id);
+    if (!entryToUpdate) {
+      return res.status(404).json({ message: "Entry not found" });
+    }
+
+    // Check each nutrient before updating
     const updatedEntry = await FoodEntry.findByIdAndUpdate(
       req.params.id,
       {
-        user: req.body.user,
+        user: user,
         foodName: foodName,
-        calories: nutrients.ENERC_KCAL,
-        carbs: nutrients.CHOCDF,
-        protein: nutrients.PROCNT,
-        fats: nutrients.FAT
+        foodItemId: foodItemId,
+        servingSize: servingSize,
+        calories: nutrients.find((n) => n.nutrientName === "Energy")
+          ?.nutrientNumber,
+        carbs: nutrients.find(
+          (n) => n.nutrientName === "Carbohydrate, by difference"
+        )?.nutrientNumber,
+        protein: nutrients.find((n) => n.nutrientName === "Protein")
+          ?.nutrientNumber,
+        fats: nutrients.find((n) => n.nutrientName === "Total lipid (fat)")
+          ?.nutrientNumber,
       },
       { new: true }
     );
-
-    if (updatedEntry == null) {
-      return res.status(404).json({ message: "Entry not found" });
-    }
+    const transformedEntry = transformServingSize(updatedEntryResult.toObject());
     res.status(200).json(updatedEntry);
   } catch (err) {
     res.status(400).json({ message: err.message });
