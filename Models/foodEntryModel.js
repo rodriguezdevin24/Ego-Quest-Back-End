@@ -14,12 +14,6 @@ const foodEntrySchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  servingSize: {
-    type: Number,
-  },
-  servingSizeUnit: {
-    type: String,
-  },
   calories: {
     type: Number,
     required: true
