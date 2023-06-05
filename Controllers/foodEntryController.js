@@ -1,7 +1,7 @@
+const fetch = require("node-fetch");
 const axios = require("axios");
 const FoodEntry = require("../Models/foodEntryModel");
 require("dotenv").config();
-
 // USDA API
 const API_KEY = process.env.USDA_API_KEY;
 
@@ -10,25 +10,26 @@ const API_KEY = process.env.USDA_API_KEY;
 exports.createEntry = async (req, res) => {
   try {
     const { foodName, foodItemId, user } = req.body;
-    const response = await axios.get(
+    const response = await fetch(
       `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${foodName}`
     );
-    const food = response.data.foods.find((f) => f.fdcId == foodItemId);
-    console.log(food);
-    if (!food) {
-      return res.status(404).json({ message: "Food not found" });
+    if (!response.ok) {
+      throw new Error("HTTP Error! status:  + ${response.status}");
     }
+    const data = await response.json();
+    const food = response.data.foods.find((f) => f.fdcId == foodItemId);
+    // console.log(food);
+    // if (!food) {
+    //   return res.status(404).json({ message: "Food not found" });
+    // }
 
     console.log(response.data);
 
     const nutrients = food.foodNutrients;
-    const servingSize = response.data.foods[0].servingSize;
     const newEntry = new FoodEntry({
       user: user,
       foodName: foodName,
       foodItemId: foodItemId,
-      servingSize: food.servingSize,
-      servingSizeUnit: food.servingSizeUnit,
       calories: nutrients.find((n) => n.nutrientName === "Energy")
         ?.value,
       carbs: nutrients.find(
@@ -70,15 +71,6 @@ exports.getEntry = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-//
 // Update an entry
 exports.updateEntry = async (req, res) => {
   try {
@@ -87,7 +79,6 @@ exports.updateEntry = async (req, res) => {
       `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${foodName}`
     );
     const nutrients = response.data.foods[0].foodNutrients;
-    const servingSize = response.data.foods[0].foodPortions.gram_weight;
 
     // Confirm the entry exists
     let entryToUpdate = await FoodEntry.findById(req.params.id);
@@ -102,8 +93,6 @@ exports.updateEntry = async (req, res) => {
         user: user,
         foodName: foodName,
         foodItemId: foodItemId,
-        servingSize: food.servingSize,
-        servingSizeUnit: food.servingSizeUnit,
         calories: nutrients.find((n) => n.nutrientName === "Energy")
           ?.value,
         carbs: nutrients.find(

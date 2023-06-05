@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const userController = require('../controllers/userController');
+const userController = require('../Controllers/userController');
 const foodEntryRoutes = require('./foodEntryRoutes');
+
 
 
 router.get('/', userController.getAllUsers);

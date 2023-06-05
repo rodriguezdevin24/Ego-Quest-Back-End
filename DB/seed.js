@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const User = require("../Models/userModel");
 const FoodEntry = require("../Models/foodEntryModel");
 require("dotenv").config({ path: "../.env" });
+const fetch = require("node-fetch");
 
 
 // Connect to DB
