@@ -10,18 +10,18 @@ const API_KEY = process.env.USDA_API_KEY;
 exports.createEntry = async (req, res) => {
   try {
     const { foodName, foodItemId, user } = req.body;
-    const response = await fetch(
+    const response = await axios.get(
       `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${foodName}`
     );
-    if (!response.ok) {
-      throw new Error("HTTP Error! status:  + ${response.status}");
-    }
-    const data = await response.json();
-    const food = response.data.foods.find((f) => f.fdcId == foodItemId);
-    // console.log(food);
-    // if (!food) {
-    //   return res.status(404).json({ message: "Food not found" });
+    // if (!response.ok) {
+    //   throw new Error("HTTP Error! status:  + ${response.status}");
     // }
+    //const data = await response.json();
+    const food = response.data.foods.find((f) => f.fdcId == foodItemId);
+    console.log(food);
+    if (!food) {
+      return res.status(404).json({ message: "Food not found" });
+    }
 
     console.log(response.data);
 
