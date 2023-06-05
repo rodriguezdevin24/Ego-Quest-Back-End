@@ -1,5 +1,5 @@
-const fetch = require("node-fetch");
 const axios = require("axios");
+const express = require("express");
 const FoodEntry = require("../Models/foodEntryModel");
 require("dotenv").config();
 // USDA API
@@ -13,10 +13,10 @@ exports.createEntry = async (req, res) => {
     const response = await axios.get(
       `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${API_KEY}&query=${foodName}`
     );
-    // if (!response.ok) {
-    //   throw new Error("HTTP Error! status:  + ${response.status}");
-    // }
-    //const data = await response.json();
+    if (!response.ok) {
+      throw new Error("HTTP Error! status:  + ${response.status}");
+    }
+    const data = await response.json();
     const food = response.data.foods.find((f) => f.fdcId == foodItemId);
     console.log(food);
     if (!food) {

@@ -1,5 +1,6 @@
 const User = require('../Models/userModel');
 const bcrypt = require('bcrypt');
+const express = require('express');
 // Get all users
 exports.getAllUsers = async (req, res) => {
   try {
@@ -10,22 +11,26 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// Create a user
+
+// Create a new user
 exports.createUser = async (req, res) => {
-    // Hash the password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(req.body.password, salt);
-  
-    const user = new User({
-      name: req.body.name,
-      email: req.body.email,
-      password: hashedPassword, // Store the hashed password
-    });  
   try {
-    const newUser = await user.save();
-    res.status(201).json(newUser);
+    const { name, email, password } = req.body;
+    console.log(req.body);
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      name: name,
+      email: email,
+      password: hashedPassword,
+    });
+
+    const savedUser = await newUser.save();
+    res.status(201).json(savedUser);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -45,15 +50,39 @@ exports.getUser = async (req, res) => {
 // Update a user
 exports.updateUser = async (req, res) => {
   try {
-    const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { name, email, password } = req.body;
+    const updatedFields = {
+      name: name,
+      email: email,
+    };
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      updatedFields.password = hashedPassword;
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(req.params.id, updatedFields, { new: true });
+
     if (updatedUser == null) {
       return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(updatedUser);
   } catch (err) {
-    res.status(400).json({ message: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
+
+// exports.updateUser = async (req, res) => {
+//   try {
+//     const updatedUser = await User.findByIdAndUpdate(req.params.id, req.body, { new: true });
+//     if (updatedUser == null) {
+//       return res.status(404).json({ message: "User not found" });
+//     }
+//     res.status(200).json(updatedUser);
+//   } catch (err) {
+//     res.status(400).json({ message: err.message });
+//   }
+// };
 
 // Delete a user
 exports.deleteUser = async (req, res) => {
