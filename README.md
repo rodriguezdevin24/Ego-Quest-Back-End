@@ -20,6 +20,8 @@ The backend is built with the following technologies:
 
 Our application uses two main schemas for data modeling: `FoodEntry` and `User`. 
 
+<img width="432" alt="Screenshot 2023-06-06 at 12 43 34 PM" src="https://github.com/rodriguezdevin24/Ego-Quest-Back-End/assets/131619471/79c34b67-7c82-4b9e-8e57-c3edca50849a">
+<img width="519" alt="Screenshot 2023-06-06 at 12 43 29 PM" src="https://github.com/rodriguezdevin24/Ego-Quest-Back-End/assets/131619471/c023ca58-e3d6-4442-a8ca-de9ba31e5d89">
 
 
 ## Structure
