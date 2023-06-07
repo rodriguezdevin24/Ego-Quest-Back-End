@@ -12,5 +12,5 @@ router.put('/:id', userController.updateUser);
 router.delete('/:id', userController.deleteUser);
 
 router.use('/:id/food-entries', foodEntryRoutes);
-
+//router.use('/food-entries', foodEntryRoutes);
 module.exports = router;
