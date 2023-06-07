@@ -70,7 +70,7 @@ exports.createEntry = async (req, res) => {
 
     const nutrients = response.data.foods[0].foodNutrients;
     const newEntry = new FoodEntry({
-      user: user,
+      user: mongoose.Types.ObjectId(user),
       foodName: foodName,
       foodItemId: foodItemId,
       calories: nutrients.find((n) => n.nutrientName === "Energy")
@@ -91,15 +91,61 @@ exports.createEntry = async (req, res) => {
   }
 };
 
-// Get all entries
+// // Get all entries for a specific user
+// exports.getUserEntries = async (req, res) => {
+//   console.log(req.params); // Log all parameters
+
+//   try {
+//     const userId = req.params.id; // Assuming the user ID is passed as a URL parameter
+//     console.log("userId:", userId);
+//     const entries = await FoodEntry.find({ user: userId });
+//     console.log("entries:", entries);
+//     res.status(200).json(entries);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+
+
+
+//Get all entries for a specific user
 exports.getAllEntries = async (req, res) => {
   try {
-    const entries = await FoodEntry.find();
+    const ObjectId = require('mongoose').Types.ObjectId; // import ObjectId from mongoose 
+    const  userId  = new ObjectId(req.params.userId); // get user id from request parameters
+    const entries = await FoodEntry.find({ user: userId });// find entries that belong to the user
+    console.log(`User ID: ${userId}`);
+    console.log(`Entries: ${JSON.stringify(entries)}`);
     res.status(200).json(entries);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
+
+
+
+
+
+
+
+// // Get all entries
+// exports.getAllEntries = async (req, res) => {
+//   try {
+//     const entries = await FoodEntry.find();
+//     res.status(200).json(entries);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
+
+
+
+
+
+
 
 // Get one entry
 exports.getEntry = async (req, res) => {
