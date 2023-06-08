@@ -52,7 +52,7 @@ To get the Ego Quest backend running locally:
 
 ## Deployment
 
-Our backend is deployed on Heroku and can be accessed at the following link: *Add your Heroku deployment link here*.
+Our backend is deployed on Heroku and can be accessed at the following link: https://ego-quest.herokuapp.com/
 
 Please note that the frontend and backend are hosted in separate repositories. You can find the frontend repository and its respective README at the following link: *Add your frontend GitHub repository link here*.
 
